@@ -22,7 +22,7 @@ class PostImport
     public function parse(string $path): array
     {
         try {
-            $data = IOFactory::load($path)->getActiveSheet()->toArray(null, false, true, false);
+            $data = IOFactory::load($path, 0, [IOFactory::READER_XLSX, IOFactory::READER_XLS])->getActiveSheet()->toArray(null, false, true, false);
         } catch (Throwable) {
             return $this->fail('File Excel tidak dapat dibaca. Pastikan file berformat .xlsx atau .xls yang valid.');
         }

@@ -112,6 +112,7 @@ class ImportExportTest extends TestCase
 
         $this->actingAs($admin)->get('/dashboard/posts/export')->assertForbidden();
         $this->actingAs($admin)->post('/dashboard/posts/import', [])->assertForbidden();
+        auth()->logout();
         $this->get('/dashboard/posts/export')->assertRedirect(route('login'));
     }
 }

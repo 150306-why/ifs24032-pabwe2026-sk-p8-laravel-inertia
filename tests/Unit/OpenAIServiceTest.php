@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Features\Post\Exceptions\AiGenerationException;
 use App\Features\Post\Services\OpenAIService;
+use Illuminate\Http\Client\Factory;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
@@ -18,6 +19,7 @@ class OpenAIServiceTest extends TestCase
 
     private function reply(mixed $content): void
     {
+        Http::swap(new Factory);
         Http::fake(['api.openai.com/*' => Http::response(['choices' => [['message' => ['content' => is_string($content) ? $content : json_encode($content)]]]])]);
     }
 
@@ -65,6 +67,7 @@ class OpenAIServiceTest extends TestCase
     public function test_throws_on_http_errors(): void
     {
         foreach ([429, 401, 500] as $status) {
+            Http::swap(new Factory);
             Http::fake(['api.openai.com/*' => Http::response(['error' => 'x'], $status)]);
 
             try {

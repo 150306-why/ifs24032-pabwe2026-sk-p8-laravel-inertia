@@ -62,13 +62,10 @@ class AiGeneratorTest extends TestCase
         $this->actingAs($me)->post('/dashboard/posts/ai-generate', $payload)->assertSessionHas('error', 'API key OpenAI belum dikonfigurasi di server.');
 
         config(['services.openai.key' => 'sk-test']);
-        Http::fake(['api.openai.com/*' => Http::response([], 429)]);
+        Http::fake(['api.openai.com/*' => Http::sequence()->push([], 429)->push([], 500)->pushFailedConnection()]);
+
         $this->actingAs($me)->post('/dashboard/posts/ai-generate', $payload)->assertSessionHas('error', fn ($m) => str_contains($m, 'Batas penggunaan'));
-
-        Http::fake(['api.openai.com/*' => Http::response([], 500)]);
         $this->actingAs($me)->post('/dashboard/posts/ai-generate', $payload)->assertSessionHas('error', fn ($m) => str_contains($m, '500'));
-
-        Http::fake(fn () => throw new ConnectionException('timeout'));
         $this->actingAs($me)->post('/dashboard/posts/ai-generate', $payload)->assertSessionHas('error', fn ($m) => str_contains($m, 'waktu permintaan habis'));
 
         $this->assertSame(0, Post::count());

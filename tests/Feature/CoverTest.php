@@ -23,7 +23,7 @@ class CoverTest extends TestCase
         $first = $post->refresh()->cover_image;
         Storage::disk('public')->assertExists($first);
 
-        $this->actingAs($me)->post("/dashboard/posts/{$post->id}/cover", ['cover' => UploadedFile::fake()->image('b.webp')]);
+        $this->actingAs($me)->post("/dashboard/posts/{$post->id}/cover", ['cover' => UploadedFile::fake()->image('b.png')]);
         Storage::disk('public')->assertMissing($first);
         Storage::disk('public')->assertExists($post->refresh()->cover_image);
     }

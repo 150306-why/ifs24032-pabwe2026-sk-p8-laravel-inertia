@@ -60,17 +60,21 @@ class PostExport
             $row++;
         }
 
+        $lastRow = $row - 1;
         $lastColumn = $sheet->getHighestColumn();
         $sheet->getStyle("A1:{$lastColumn}1")->applyFromArray([
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4F46E5']],
         ]);
 
-        foreach (['A' => 40, 'B' => 18, 'C' => 80, 'D' => 12, 'E' => 20, 'F' => 20, 'G' => 24] as $column => $width) {
+        $widths = ['A' => 40, 'B' => 18, 'C' => 80, 'D' => 12, 'E' => 20, 'F' => 20, 'G' => 24];
+        foreach (array_slice($widths, 0, count($headers), true) as $column => $width) {
             $sheet->getColumnDimension($column)->setWidth($width);
         }
 
-        $sheet->getStyle("C2:C{$row}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
+        if ($lastRow >= 2) {
+            $sheet->getStyle("C2:C{$lastRow}")->getAlignment()->setWrapText(true)->setVertical(Alignment::VERTICAL_TOP);
+        }
         $sheet->freezePane('A2');
 
         return $spreadsheet;
