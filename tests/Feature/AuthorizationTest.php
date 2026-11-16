@@ -41,9 +41,23 @@ class AuthorizationTest extends TestCase
         $this->assertModelExists($post);
     }
 
-    public function test_dashboard_root_redirects_to_posts(): void
+    public function test_dashboard_root_renders_posts_page_without_redirect(): void
     {
-        $this->actingAs(User::factory()->create())->get('/dashboard')->assertRedirect('/dashboard/posts');
+        $me = User::factory()->create();
+        Post::factory()->for($me)->create();
+
+        $this->actingAs($me)->get('/dashboard')->assertOk()->assertInertia(fn (Assert $p) => $p
+            ->component('Post/Index')
+            ->has('posts.data', 1)
+            ->has('stats')
+            ->has('filters'));
+
+        $this->actingAs(User::factory()->admin()->create())->get('/dashboard')->assertForbidden();
+    }
+
+    public function test_guest_is_sent_to_login_from_dashboard_root(): void
+    {
+        $this->get('/dashboard')->assertRedirect(route('login'));
     }
 
     public function test_shared_props_expose_user_without_secrets(): void

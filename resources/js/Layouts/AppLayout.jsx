@@ -2,7 +2,7 @@ import { FileText, Globe, User } from 'lucide-react';
 import SidebarLayout from '@/Components/SidebarLayout';
 
 const nav = [
-    { href: '/dashboard/posts', label: 'Artikel Saya', icon: FileText },
+    { href: '/dashboard', label: 'Artikel Saya', icon: FileText },
     { href: '/profile', label: 'Profil', icon: User },
     { href: '/', label: 'Lihat Blog', icon: Globe },
 ];

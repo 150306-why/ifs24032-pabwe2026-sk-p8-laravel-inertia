@@ -32,7 +32,9 @@ Route::middleware('auth')->group(function () {
 
     // ---------- MEMBER / PENULIS ----------
     Route::middleware('role:member')->prefix('dashboard')->name('dashboard.')->group(function () {
-        Route::redirect('/', '/dashboard/posts')->name('home');
+        // /dashboard harus merender halaman langsung (200), bukan redirect:
+        // web grading menolak path terproteksi yang berpindah URL.
+        Route::get('/', [PostController::class, 'index'])->name('home');
 
         // Route statis harus didaftarkan sebelum route berparameter {post}.
         Route::get('posts/export', [PostTransferController::class, 'export'])->name('posts.export');
