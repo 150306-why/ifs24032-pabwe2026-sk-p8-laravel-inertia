@@ -36,8 +36,22 @@ if ($uri !== '/' && is_file($file) && str_starts_with($uri, '/build/assets/') &&
     $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
     header('Content-Type: '.($types[$ext] ?? (mime_content_type($file) ?: 'application/octet-stream')));
-    header('Content-Length: '.filesize($file));
     header('Cache-Control: public, max-age=31536000, immutable');
+    header('Vary: Accept-Encoding');
+
+    // Kirim salinan terkompresi (dibuat saat `npm run build`): Brotli bila didukung, lalu gzip.
+    $acceptEncoding = $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '';
+    if (! in_array($ext, ['gz', 'br'], true)) {
+        if (str_contains($acceptEncoding, 'br') && is_file($file.'.br')) {
+            $file .= '.br';
+            header('Content-Encoding: br');
+        } elseif (str_contains($acceptEncoding, 'gzip') && is_file($file.'.gz')) {
+            $file .= '.gz';
+            header('Content-Encoding: gzip');
+        }
+    }
+
+    header('Content-Length: '.filesize($file));
 
     if ($_SERVER['REQUEST_METHOD'] !== 'HEAD') {
         readfile($file);
