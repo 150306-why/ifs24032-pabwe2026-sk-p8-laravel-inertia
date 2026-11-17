@@ -38,6 +38,10 @@ if ($uri !== '/' && is_file($file) && str_starts_with($uri, '/build/assets/') &&
     header('Content-Type: '.($types[$ext] ?? (mime_content_type($file) ?: 'application/octet-stream')));
     header('Cache-Control: public, max-age=31536000, immutable');
     header('Vary: Accept-Encoding');
+    // Header diagnostik: memastikan aset dilayani router ini dan header Accept-Encoding apa yang diterima
+    // dari reverse proxy (berguna saat memeriksa kompresi dengan `curl -I`).
+    header('X-Asset-Router: server.php');
+    header('X-Accept-Encoding-Received: '.(($_SERVER['HTTP_ACCEPT_ENCODING'] ?? '') !== '' ? preg_replace('/[^\w,;=. *-]/', '', $_SERVER['HTTP_ACCEPT_ENCODING']) : 'none'));
 
     // Kompresi aset (php artisan serve tidak mengompres sendiri):
     // 1. Salinan .br/.gz hasil `npm run build` bila ada.

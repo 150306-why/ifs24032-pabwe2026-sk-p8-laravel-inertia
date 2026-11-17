@@ -20,7 +20,9 @@ export default function MarkdownEditor({ value, onChange, height = '420px', plac
             events: { change: () => onChangeRef.current(editor.getMarkdown()) },
         });
 
-        return () => editor.destroy();
+        // Toolbar TOAST UI menjadwalkan re-render saat resize (throttle 200 ms). Bila destroy() dipanggil
+        // sebelum timer itu jalan, muncul error "removeChild". Tunda destroy sampai timer selesai.
+        return () => setTimeout(() => editor.destroy(), 300);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
