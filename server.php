@@ -39,22 +39,32 @@ if ($uri !== '/' && is_file($file) && str_starts_with($uri, '/build/assets/') &&
     header('Cache-Control: public, max-age=31536000, immutable');
     header('Vary: Accept-Encoding');
 
-    // Kirim salinan terkompresi (dibuat saat `npm run build`): Brotli bila didukung, lalu gzip.
-    $acceptEncoding = $_SERVER['HTTP_ACCEPT_ENCODING'] ?? '';
-    if (! in_array($ext, ['gz', 'br'], true)) {
-        if (str_contains($acceptEncoding, 'br') && is_file($file.'.br')) {
-            $file .= '.br';
-            header('Content-Encoding: br');
-        } elseif (str_contains($acceptEncoding, 'gzip') && is_file($file.'.gz')) {
-            $file .= '.gz';
-            header('Content-Encoding: gzip');
-        }
+    // Kompresi aset (php artisan serve tidak mengompres sendiri):
+    // 1. Salinan .br/.gz hasil `npm run build` bila ada.
+    // 2. Bila tidak ada, gzip langsung di sini (ekstensi zlib).
+    // Bila header Accept-Encoding tidak sampai (dihapus reverse proxy), gzip tetap dipakai karena
+    // semua browser modern mendukungnya; hanya klien yang tegas menolak gzip yang menerima file mentah.
+    $acceptEncoding = strtolower($_SERVER['HTTP_ACCEPT_ENCODING'] ?? '');
+    $acceptsBrotli = str_contains($acceptEncoding, 'br');
+    $acceptsGzip = $acceptEncoding === '' || str_contains($acceptEncoding, 'gzip') || str_contains($acceptEncoding, '*');
+    $compressible = in_array($ext, ['js', 'mjs', 'css', 'map', 'json', 'svg'], true);
+
+    $body = null;
+    if ($compressible && $acceptsBrotli && is_file($file.'.br')) {
+        $file .= '.br';
+        header('Content-Encoding: br');
+    } elseif ($compressible && $acceptsGzip && is_file($file.'.gz')) {
+        $file .= '.gz';
+        header('Content-Encoding: gzip');
+    } elseif ($compressible && $acceptsGzip && function_exists('gzencode')) {
+        $body = gzencode((string) file_get_contents($file), 6);
+        header('Content-Encoding: gzip');
     }
 
-    header('Content-Length: '.filesize($file));
+    header('Content-Length: '.($body !== null ? strlen($body) : filesize($file)));
 
     if ($_SERVER['REQUEST_METHOD'] !== 'HEAD') {
-        readfile($file);
+        $body !== null ? print($body) : readfile($file);
     }
 
     return true;
