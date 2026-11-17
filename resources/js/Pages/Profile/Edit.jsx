@@ -47,4 +47,11 @@ export default function Edit({ profile }) {
     );
 }
 
-Edit.layout = (page) => (page.props.auth.user.role === 'admin' ? <AdminLayout>{page}</AdminLayout> : <AppLayout>{page}</AppLayout>);
+// Inertia v3 memanggil resolver layout dua kali: pertama dengan objek props halaman,
+// lalu dengan elemen React halaman. Dukung keduanya agar tidak crash (layar kosong).
+Edit.layout = (page) => {
+    const props = page?.props ?? page;
+    const isAdmin = props?.auth?.user?.role === 'admin';
+
+    return isAdmin ? <AdminLayout>{page}</AdminLayout> : <AppLayout>{page}</AppLayout>;
+};
