@@ -47,7 +47,7 @@ export default function SidebarLayout({ roleLabel, nav, dark = false, children }
 
             <aside className="fixed inset-y-0 left-0 hidden w-64 lg:block">{sidebar}</aside>
 
-            <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+            <header className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
                 <Link href="/" className="flex items-center gap-2 font-serif text-lg font-bold text-slate-900">
                     <BookOpen className="h-5 w-5 text-indigo-600" />
                     BlogVerse Pro
@@ -55,17 +55,17 @@ export default function SidebarLayout({ roleLabel, nav, dark = false, children }
                 <button type="button" aria-label="Buka menu" onClick={() => setOpen(true)} className="cursor-pointer rounded-lg p-2 hover:bg-slate-100">
                     <Menu className="h-6 w-6" />
                 </button>
-            </div>
+            </header>
 
             {open && (
                 <div className="fixed inset-0 z-40 lg:hidden">
                     <div className="absolute inset-0 bg-slate-900/50" onClick={() => setOpen(false)} />
-                    <div className="absolute inset-y-0 left-0 w-64">
+                    <aside className="absolute inset-y-0 left-0 w-64">
                         <button type="button" aria-label="Tutup menu" onClick={() => setOpen(false)} className="absolute right-2 top-3 z-10 cursor-pointer rounded-lg p-1.5 text-slate-400 hover:bg-white/10">
                             <X className="h-5 w-5" />
                         </button>
                         {sidebar}
-                    </div>
+                    </aside>
                 </div>
             )}
 

@@ -1,11 +1,16 @@
 @import "tailwindcss";
 
+/* Font di-host sendiri (bukan Google Fonts) agar tidak ada request eksternal yang memblokir render. */
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+
 @source "../views/**/*.blade.php";
 @source "../js/**/*.jsx";
 
 @theme {
-    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-    --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Newsreader Variable", "Newsreader", Georgia, "Times New Roman", serif;
 }
 
 /* Seluruh elemen interaktif memakai cursor pointer. */

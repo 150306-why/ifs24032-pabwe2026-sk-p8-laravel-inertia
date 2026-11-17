@@ -10,6 +10,11 @@ export default defineConfig({
         react(),
         tailwindcss(),
     ],
+    build: {
+        // Source map untuk debugging produksi (audit Lighthouse "Missing source maps").
+        sourcemap: true,
+        target: 'es2022',
+    },
     resolve: {
         alias: { '@': fileURLToPath(new URL('./resources/js', import.meta.url)) },
     },

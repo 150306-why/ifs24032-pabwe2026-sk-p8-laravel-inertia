@@ -45,7 +45,7 @@ export default function PostIndex({ posts, filters, publicCategories }) {
                     </div>
                 ) : (
                     <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        {posts.data.map((post) => <PostCard key={post.id} post={post} />)}
+                        {posts.data.map((post) => <PostCard key={post.id} post={post} headingLevel={2} />)}
                     </div>
                 )}
                 <Pagination links={posts.links} />
