@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import react from '@vitejs/plugin-react';
+import preact from '@preact/preset-vite';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'node:url';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -44,7 +44,7 @@ function precompress() {
  * yang tidak dipakai aplikasi (InfiniteScroll, Form, Deferred, WhenVisible, ...) beserta kodenya di
  * @inertiajs/core tetap ikut ter-bundle. displayName hanya untuk React DevTools, jadi dibuang saat build,
  * dan pemanggilan forwardRef/createContext/memo tingkat atas ditandai @__PURE__ agar tree-shaking bisa
- * menghapus kode yang tidak terpakai.
+ * menghapus kode yang tidak terpakai. Hook `use` (khusus React 19) dipetakan ke useContext untuk Preact.
  */
 function inertiaTreeShaking() {
     return {
@@ -55,7 +55,12 @@ function inertiaTreeShaking() {
             const result = code
                 .replace(/^[A-Za-z_$][\w$]*\.displayName = "[^"]*";$/gm, '')
                 // Tandai pembuatan komponen/context tingkat atas sebagai murni (bebas efek samping).
-                .replace(/^(var [A-Za-z_$][\w$]* = )((?:forwardRef|createContext|memo)\d*\()/gm, '$1/* @__PURE__ */ $2');
+                .replace(/^(var [A-Za-z_$][\w$]* = )((?:forwardRef|createContext|memo)\d*\()/gm, '$1/* @__PURE__ */ $2')
+                // Inertia memakai hook `use` (React 19) hanya untuk membaca context; Preact memakai useContext.
+                .replace(/(import (?:[\w$]+\s*,\s*)?\{)([^}]*)(\} from "react";)/g, (_, head, names, tail) => {
+                    const mapped = names.replace(/\buse\b(\s+as\s+[\w$]+)?/g, (m, alias) => `useContext${alias ?? ' as use'}`);
+                    return `${head}${mapped}${tail}`;
+                });
             return { code: result, map: null };
         },
     };
@@ -64,7 +69,9 @@ function inertiaTreeShaking() {
 export default defineConfig({
     plugins: [
         laravel({ input: ['resources/css/app.css', 'resources/js/app.jsx'], refresh: true }),
-        react(),
+        // Preact (preact/compat) menggantikan React DOM: API sama, runtime jauh lebih kecil (~10 KB gzip
+        // vs ~64 KB), sehingga JS yang dimuat tetapi tidak terpakai saat halaman dibuka minimal.
+        preact(),
         tailwindcss(),
         inertiaTreeShaking(),
         precompress(),
@@ -84,8 +91,7 @@ export default defineConfig({
                     if (id.includes('/@inertiajs/core/')) return 'vendor-inertia-core';
                     if (id.includes('/@inertiajs/react/')) return 'vendor-inertia-react';
                     if (id.includes('/es-toolkit/') || id.includes('/laravel-precognition/')) return 'vendor-utils';
-                    if (id.includes('/react-dom/')) return 'vendor-react-dom';
-                    if (id.includes('/react/') || id.includes('/scheduler/')) return 'vendor-react';
+                    if (id.includes('/preact/')) return 'vendor-preact';
                     return undefined;
                 },
             },
